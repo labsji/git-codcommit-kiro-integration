@@ -39,6 +39,7 @@ Resources:
               Action:
                 - codecommit:Get*
                 - codecommit:GitPull
+                - codecommit:GitPush
                 - codecommit:ListBranches
                 - codecommit:ListPullRequests
                 - codecommit:CreateCommit
