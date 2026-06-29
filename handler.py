@@ -275,7 +275,7 @@ def handle_branches(project_id, qs):
         return resp(404, {"error": str(e)})
     branches = []
     for b in r.get("branches", []):
-        branches.append({"name": b, "default": b == "main", "web_url": ""})
+        branches.append({"name": b, "default": b == "main", "web_url": f"https://ap-south-1.console.aws.amazon.com/codesuite/codecommit/repositories/{repo}/browse/refs/heads/{b}"})
     return resp(200, branches)
 
 
@@ -295,7 +295,7 @@ def handle_list_mrs(project_id, qs):
             "state": "opened" if pr["pullRequestStatus"] == "OPEN" else "merged",
             "source_branch": pr["pullRequestTargets"][0]["sourceReference"].split("/")[-1],
             "target_branch": pr["pullRequestTargets"][0]["destinationReference"].split("/")[-1],
-            "web_url": "",
+            "web_url": f"https://ap-south-1.console.aws.amazon.com/codesuite/codecommit/repositories/{repo}/pull-requests/{pr_id}",
         })
     return resp(200, mrs)
 
@@ -319,7 +319,7 @@ def handle_create_mr(project_id, data):
         "iid": int(pr["pullRequestId"]),
         "title": pr["title"],
         "state": "opened",
-        "web_url": "",
+        "web_url": f"https://ap-south-1.console.aws.amazon.com/codesuite/codecommit/repositories/{repo}/pull-requests/{pr['pullRequestId']}",
     })
 
 
