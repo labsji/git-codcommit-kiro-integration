@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "codecommit": {
+      "command": "python3",
+      "args": ["-m", "codecommit_mcp"],
+      "env": {
+        "AWS_REGION": "${AWS_REGION:-ap-south-1}"
+      }
+    }
+  }
+}

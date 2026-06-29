@@ -1,0 +1,72 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: GitLab API proxy over CodeCommit for Kiro Web
+
+Parameters:
+  ValidTokens:
+    Type: String
+    Description: Comma-separated PATs accepted by the proxy
+    NoEcho: true
+  DomainName:
+    Type: String
+    Default: git.next.skith.in
+  HostedZoneId:
+    Type: String
+    Default: Z038517632KA0EXLM5Y06
+  CertificateArn:
+    Type: String
+    Description: ACM cert ARN for git.next.skith.in (us-east-1 for CloudFront, or ap-south-1 for regional)
+
+Resources:
+  ProxyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.12
+      Handler: handler.handler
+      CodeUri: .
+      MemorySize: 512
+      Timeout: 60
+      Environment:
+        Variables:
+          VALID_TOKENS: !Ref ValidTokens
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - codecommit:ListRepositories
+              Resource: "*"
+            - Effect: Allow
+              Action:
+                - codecommit:Get*
+                - codecommit:GitPull
+                - codecommit:ListBranches
+                - codecommit:ListPullRequests
+                - codecommit:CreateCommit
+                - codecommit:CreateBranch
+                - codecommit:CreatePullRequest
+                - codecommit:GetPullRequest
+              Resource: !Sub "arn:aws:codecommit:ap-south-1:${AWS::AccountId}:*"
+      FunctionUrlConfig:
+        AuthType: NONE
+        InvokeMode: RESPONSE_STREAM
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: $default
+      Domain:
+        DomainName: !Ref DomainName
+        CertificateArn: !Ref CertificateArn
+        Route53:
+          HostedZoneId: !Ref HostedZoneId
+
+Outputs:
+  ApiUrl:
+    Value: !Sub "https://${DomainName}"
+  FunctionArn:
+    Value: !GetAtt ProxyFunction.Arn
